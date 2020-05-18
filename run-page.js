@@ -13,7 +13,7 @@ export default async (url='http://sheshbesh.herokuapp.com/')=>{
   // wait for chrome to be listening
   // probably should listen to stdout instead
   
-  await (new Promise(f=> setTimeout(f, 300)));
+  await (new Promise(f=> setTimeout(f, 500)));
 
 
   // connectSocket(PORT, url)
@@ -34,8 +34,9 @@ export default async (url='http://sheshbesh.herokuapp.com/')=>{
   
   const pageDriver = {
     navigate: url => runCommand('Page.navigate', { url }),
-    runJS: expression =>
-      runCommand('Runtime.evaluate', { expression }).then(res => res.result.value),
+    runJS: (expression, awaitPromise=false) =>
+      runCommand('Runtime.evaluate', { expression, awaitPromise })
+      .then(res => res.result.value),
 
     screenshot: ()=> runCommand('Page.captureScreenshot'),
     click: selector=> runCommand('Runtime.evaluate', {
