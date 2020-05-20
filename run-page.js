@@ -1,7 +1,7 @@
 import runChrome from './run-chrome.ts';
 import connectSocket from './connect-socket.js';
 
-export default async (url='http://sheshbesh.herokuapp.com/')=>{
+export default async (url='http://sheshbesh.nikfrank.com/')=>{
 
   // runChrome(PORT, url), which will bear a promise for when it closes
   // this may entail window.addEventListener('close-chrome')
@@ -13,7 +13,7 @@ export default async (url='http://sheshbesh.herokuapp.com/')=>{
   // wait for chrome to be listening
   // probably should listen to stdout instead
   
-  await (new Promise(f=> setTimeout(f, 500)));
+  await (new Promise(f=> setTimeout(f, 900)));
 
 
   // connectSocket(PORT, url)
@@ -34,6 +34,8 @@ export default async (url='http://sheshbesh.herokuapp.com/')=>{
   
   const pageDriver = {
     navigate: url => runCommand('Page.navigate', { url }),
+
+    // userGesture: true?
     runJS: (expression, awaitPromise=false) =>
       runCommand('Runtime.evaluate', { expression, awaitPromise })
       .then(res => res.result.value),
@@ -47,7 +49,12 @@ export default async (url='http://sheshbesh.herokuapp.com/')=>{
 const event = document.createEvent("SVGEvents");
 event.initEvent("click",true,true);
 document.querySelector("${selector}").dispatchEvent(event);
-`)
+`),
+    dblclickSVG: selector=> pageDriver.runJS(`
+const event = document.createEvent("SVGEvents");
+event.initEvent("dblclick",true,true);
+document.querySelector("${selector}").dispatchEvent(event);
+`),
   };
 
   return pageDriver
