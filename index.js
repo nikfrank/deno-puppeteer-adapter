@@ -94,9 +94,17 @@ console.log(move);
 
 // click based on moves.
 
-(()=>{
-  
-  
+await (async ()=>{
+  await clickSVG('.Board > g:nth-of-type('+(move[0].moveFrom+3)+') rect');
+
+  const pic4 = await screenshot();
+  await Deno.writeFile('pic4.png', base64.toUint8Array(pic4.data));
+
+
+  await clickSVG('.Board > g:nth-of-type('+(move[0].moveTo+3)+') rect');
+
+  const pic5 = await screenshot();
+  await Deno.writeFile('pic5.png', base64.toUint8Array(pic5.data));
 
 })();
 

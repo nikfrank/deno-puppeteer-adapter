@@ -46,14 +46,16 @@ export default async (url='http://sheshbesh.nikfrank.com/')=>{
     }),
 
     clickSVG: selector=> pageDriver.runJS(`
-const event = document.createEvent("SVGEvents");
-event.initEvent("click",true,true);
-document.querySelector("${selector}").dispatchEvent(event);
+(event => {
+  event.initEvent("click",true,true);
+  document.querySelector("${selector}").dispatchEvent(event);
+})(document.createEvent("SVGEvents"));
 `),
     dblclickSVG: selector=> pageDriver.runJS(`
-const event = document.createEvent("SVGEvents");
-event.initEvent("dblclick",true,true);
-document.querySelector("${selector}").dispatchEvent(event);
+(event => {
+  event.initEvent("dblclick",true,true);
+  document.querySelector("${selector}").dispatchEvent(event);
+})(document.createEvent("SVGEvents"));
 `),
   };
 
