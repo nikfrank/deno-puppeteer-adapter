@@ -1,4 +1,5 @@
 import runPage from './run-page.js';
+import { makeGif, deletePics } from './run-ffmpeg.js';
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts";
 
 import {
@@ -8,23 +9,23 @@ import {
 } from 'https://denopkg.com/nikfrank/react-sheshbesh/src/util.js';
 
 
-const { navigate, runJS, screenshot, click, clickSVG } = await runPage();
+const { chrome, navigate, runJS, screenshot, click, clickSVG, dblclickSVG } = await runPage();
 
 const wait = async t => await (new Promise(f=> setTimeout(f, t)));
 
-const rand = await runJS('Math.random()');
+let picCounter = 0;
 
-console.log(rand);
+const savePic = async ()=> {
+  const pic = await screenshot();
+  await Deno.writeFile('pic'+(++picCounter)+'.png', base64.toUint8Array(pic.data));
+};
+
 
 // wait for page load
 await wait(3000);
 
-const roll = await runJS('document.querySelector("button").innerHTML');
-
-console.log(roll);
-
-await runJS('const TO = window.setTimeout; window.setTimeout = (fn, t)=> TO(fn, t/5);');
-
+// speed up timeouts
+await runJS('const TO = window.setTimeout; window.setTimeout = (fn, t)=> TO(fn, t/16);');
 
 
 // wait for roll button or game is over
@@ -43,16 +44,12 @@ await runJS('const TO = window.setTimeout; window.setTimeout = (fn, t)=> TO(fn, 
 
 // after moves, check if game is over
 
-const a = await click('.dice-container button');
 
-await wait(100);
-
-const pic3 = await screenshot();
-await Deno.writeFile('pic3.png', base64.toUint8Array(pic3.data));
+const roll = ()=> click('.dice-container button');
 
 
 const getGameState = ()=> runJS(`
-const gameState = {
+JSON.stringify({
   dice: [...document.querySelectorAll('.dice-container svg')].map((_, i)=> 
     document.querySelectorAll('.dice-container svg:nth-child('+(i+1)+') circle').length
   ),
@@ -62,15 +59,9 @@ const gameState = {
   blackHome: document.querySelectorAll('.Board .black-home').length,
   whiteHome: document.querySelectorAll('.Board .white-home').length,
   turn: 'black',
-};
-JSON.stringify(gameState)
+})
 `);
 
-const gameStateString = await getGameState();
-
-console.log('g', gameStateString);
-
-const gameState = JSON.parse(gameStateString);
 
 const getBestMoves = (board)=> {
   const options = calculateBoardOutcomes(board);
@@ -86,29 +77,61 @@ const getBestMoves = (board)=> {
   return bestMoves;
 };
 
-const move = getBestMoves(gameState);
-
-console.log(move);
-
-
 
 // click based on moves.
 
-await (async ()=>{
-  await clickSVG('.Board > g:nth-of-type('+(move[0].moveFrom+3)+') rect');
+const clickMove = (async (move)=>{
+  for( let i=0, moveFrom, moveTo; i < move.length; i++) {
+    if( typeof move[i].moveFrom === 'number' )
+      await clickSVG('.Board > g:nth-of-type('+(move[i].moveFrom+3)+') rect');
 
-  const pic4 = await screenshot();
-  await Deno.writeFile('pic4.png', base64.toUint8Array(pic4.data));
+    if( typeof move[i].moveTo === 'number' )
+      await clickSVG('.Board > g:nth-of-type('+(move[i].moveTo+3)+') rect');
+
+    if( (''+move[i].moveTo).includes('Home') )
+      await dblclickSVG('.Board > g:nth-of-type('+(move[i].moveFrom+3)+') rect');
+
+    await savePic();
+  }
+});
 
 
-  await clickSVG('.Board > g:nth-of-type('+(move[0].moveTo+3)+') rect');
+await roll();
+await savePic();
 
-  const pic5 = await screenshot();
-  await Deno.writeFile('pic5.png', base64.toUint8Array(pic5.data));
+let gameState = JSON.parse(await getGameState());
+let move = getBestMoves(gameState);
 
-})();
+await clickMove(move);
+await wait(400);
 
+
+let maxHome = 0;
+for( let j=0; j < 40; j++){
+
+  gameState = JSON.parse(await getGameState());
+  const nextMax = Math.max(gameState.blackHome, gameState.whiteHome);
+  if( nextMax > maxHome ) maxHome = nextMax;
+  if( nextMax < maxHome || nextMax === 15 ) break;
+
+  await roll();
+  await savePic();
+
+  gameState = JSON.parse(await getGameState());
+  move = getBestMoves(gameState);
+
+  if(move) await clickMove(move);
+  await wait(400);
+}
+
+await makeGif();
+
+await deletePics();
 
 const p = await runJS('Promise.resolve(10)', !!'awaitPromise');
 
 console.log(p);
+
+chrome.close();
+
+Deno.exit(0);

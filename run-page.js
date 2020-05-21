@@ -8,8 +8,6 @@ export default async (url='http://sheshbesh.nikfrank.com/')=>{
   
   const chrome = runChrome(url);
 
-  setTimeout(()=> chrome.close(), 200000);
-  
   // wait for chrome to be listening
   // probably should listen to stdout instead
   
@@ -57,7 +55,8 @@ export default async (url='http://sheshbesh.nikfrank.com/')=>{
   document.querySelector("${selector}").dispatchEvent(event);
 })(document.createEvent("SVGEvents"));
 `),
+    chrome,
   };
 
-  return pageDriver
+  return pageDriver;
 };
