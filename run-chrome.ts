@@ -1,4 +1,4 @@
-export default (url='https://google.ca', port=9222)=>{
+export default (url='https://google.ca/', port=9222)=>{
   
   const p = Deno.run({
     cmd: [
