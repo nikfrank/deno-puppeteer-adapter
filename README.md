@@ -1,105 +1,72 @@
-# deno w chrome headless
+# deno puppeteer adapter
 
-## deno - dino, deino, dyno, dayenu.
-
-steps:
-
-run chrome headless with some debugging port (9222)
-
-(https://medium.com/@lagenar/using-headless-chrome-via-the-websockets-interface-5f498fb67e0f)
-
-request localhost:9222/json, this will give you `.webSocketDebuggerUrl`
-
-now we establish a websocket connection
-
-now we can send debugger requests to the headless browser
-
-{ id, method, params }
-
-method is structured as Domain.method (eg Page.navigate)
+```js
+import {
+  runChrome.
+  puppeteer,
+} from 'https://denopkg.com/nikfrank/deno-puppeteer-adapter/index.js';
 
 
-can load up localhost:9222 to see a fake head for the headless chrome
+const [process, ws] = await runChrome();
 
-connecting to websocket using
-
-https://deno.land/std/ws/README.md
-
----
-
-great - that POC worked
-
-next, let's turn this bogus little demo into something resembling a useful API
+//... ws is the address of chrome's top level socket
+//... I don't ever use it, idk maybe you need it
 
 
---> need to run the headless chrome process from deno
 
-https://doc.deno.land/https/github.com/denoland/deno/releases/latest/download/lib.deno.d.ts#Deno.run
+// wait for chrome to open the websocket
+const wait = t=> (new Promise(f=> setTimeout(f, t)));
+await wait(900);
 
 
-export a factory for
+// load the url for the socket we want
 
-- chrome headless process
-- websocket connection thereto
-- utility function for socket headless-protocol io
+const url = 'http://sheshbesh.nikfrank.com/';
+const port = 9222;
+const response = await fetch('http://localhost:'+port+'/json')
+const tabs = await response.json();
 
+const socketUrl = tabs
+  .find((tab={ url: null }) => tab.url === url)
+  .webSocketDebuggerUrl;
+
+
+// connect puppeteer to it
+
+const browser = await puppeteer.connect({
+  browserWSEndpoint: socketUrl,
+  ignoreHTTPSErrors: true,
+});
+
+const page = await browser.newPage();
+await page.goto(url, { waitUntil: 'networkidle2' });
+
+// now you can do anything with puppeteer you want!
+
+process.close();
+
+Deno.exit(0);
 
 ```
-js = """
-var sel = '[role="heading"][aria-level="2"]';
-var headings = document.querySelectorAll(sel);
-headings = [].slice.call(headings).map((link)=>{return link.innerText});
-JSON.stringify(headings);
-"""
-```
-
-result = run_command(conn, 'Runtime.evaluate', expression=js)
 
 
+## Contributing
 
----
+If puppeteer in Deno is a serious need in your life, I suggest going through the same process I did so you can be sufficiently confident for your serious need. Rough notes on the process are available in buildnotes.md
 
-screenshots
+in doing so, you could browserify a latest copy of puppeteer-core, if you need to!
 
-https://medium.com/@dschnr/using-headless-chrome-as-an-automated-screenshot-tool-4b07dffba79a
+please inspect the shims I did by comparing ./puppeteer-web.js in this repo to the npmjs package of the same name
 
-after each roll, and each move
-
--> output images into some dir, process into gif
-
-https://deno.land/typedoc/modules/deno.html#writefile
-https://deno.land/x/base64/README.md
-
-https://stackoverflow.com/questions/53437400/how-to-set-frame-delay-when-use-ffmpeg-to-convert-images-to-gif
-
+I would also suggest forking the repo, as I'm not committed to future development.
 
 
 ---
 
-publishing a deno "module"
-
-deno headless adapter
-
-...
 
 
+MIT License
 
+Some work on this project was conducted in Judea / Samaria
 
-
----
-
-working with deno
-
-(ts issues, MDN > deno.land)
-
-pretty, pretty good
-
-
-
-working with chrome headless
-
-`ps -aux | grep chrome` sux
-
-localhost:9222 -> put the head back on, can debug something you're automating
-
-running a command outside the protocol fails silently
+if your interpretation of UNSC 242 differs from mine, feel free to boycott!
