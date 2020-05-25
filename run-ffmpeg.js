@@ -2,8 +2,8 @@ export const makeGif = ()=> {
   const p = Deno.run({
     cmd: [
       'ffmpeg',
-      '-framerate', '3',
-      '-i', 'pic%0d.png',
+      '-framerate', '2',
+      '-i', 'pic%d.png',
       'output.gif'
     ],
     stdout: 'piped',
