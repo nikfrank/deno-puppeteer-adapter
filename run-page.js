@@ -26,19 +26,16 @@ export default async (url='http://sheshbesh.nikfrank.com/')=>{
   // export functions:
   // - navigate
   // - runJS
-  
-  const two = await runCommand('Runtime.evaluate', { expression: '1+1' });
-  console.log(two.result.value);
-  
+    
   const pageDriver = {
     navigate: url => runCommand('Page.navigate', { url }),
 
-    // userGesture: true?
     runJS: (expression, awaitPromise=false) =>
       runCommand('Runtime.evaluate', { expression, awaitPromise })
       .then(res => res.result.value),
 
     screenshot: ()=> runCommand('Page.captureScreenshot'),
+
     click: selector=> runCommand('Runtime.evaluate', {
       expression : 'document.querySelector("'+selector+'").click()'
     }),

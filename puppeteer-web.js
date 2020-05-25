@@ -1,37 +1,26 @@
 import {
   connectWebSocket,
   isWebSocketCloseEvent,
-  isWebSocketPingEvent,
-  isWebSocketPongEvent
 } from "https://deno.land/std/ws/mod.ts";
 
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts";
 import EventEmitter from "https://denopkg.com/denoland/deno/std/node/events.ts";
 
-//import EventEmitter from "https://deno.land/x/event_emitter/mod.ts";
-
 export default (function(f){
   let ret;
   
-  if(typeof exports==="object"&&typeof module!=="undefined"){
-    ret=module.exports=f()
-  }else if(typeof define==="function"&&define.amd){
-    ret=define([],f)
-  }else{
+  if(typeof exports==="object"&&typeof module!=="undefined") ret=module.exports=f();
+  else if(typeof define==="function"&&define.amd) ret=define([],f);
+  else{
     var g;
-    if(typeof window!=="undefined"){
-      g=window
-    }else if(typeof global!=="undefined"){
-      g=global
-    }else if(typeof self!=="undefined"){
-      g=self
-    }else{
-      g=this
-    }
+    if(typeof window!=="undefined") g=window;
+    else if(typeof global!=="undefined") g=global;
+    else if(typeof self!=="undefined") g=self;
+    else g=this;
+    
     g.puppeteer = f()
     ret = g.puppeteer;
   }
-  console.log(ret);
   return ret;
 })(function(){
   var define,module,exports;
@@ -13812,10 +13801,14 @@ class Connection extends EventEmitter {
    * @return {!Promise<?Object>}
    */
   send(method, params = {}) {
-    if( method === 'Target.getBrowserContexts' ) return Promise.resolve({ browserContextIds: [] });
+    if( method === 'Target.getBrowserContexts' )
+      return Promise.resolve({ browserContextIds: [] });
+    
     const id = this._rawSend({method, params});
     return new Promise((resolve, reject) => {
-      this._callbacks.set(id, {resolve, reject, error: new Error(), method});
+      this._callbacks.set(id, {
+        resolve, reject, error: new Error(), method
+      });
     });
   }
 
@@ -19912,9 +19905,10 @@ const {createJSHandle} = require('./JSHandle');
 const {Accessibility} = require('./Accessibility');
 const {TimeoutSettings} = require('./TimeoutSettings');
 
-  const writeFileAsync =
-    (path, contents)=> Deno.writeFile(path, base64.toUint8Array(contents));
-    //helper.promisify(fs.writeFile, 'fs.writeFile, Page');
+//const writeFileAsync = helper.promisify(fs.writeFile);
+
+const writeFileAsync = (path, contents)=>
+    Deno.writeFile(path, base64.toUint8Array(contents));
 
 class Page extends EventEmitter {
   /**
@@ -22069,7 +22063,6 @@ module.exports = {
   const WebSocket = class WebSocket extends EventEmitter {
     constructor(endpoint, ...rest){
       super(endpoint, ...rest);
-      console.log(endpoint);
       this.connect(endpoint);
     }
 
@@ -22079,13 +22072,8 @@ module.exports = {
       this.sock = sock;
 
       for await (const msg of sock) {
-        if (typeof msg === "string") {
-          this.emit( 'message', msg );
-          
-        } else if (isWebSocketCloseEvent(msg)) {
-          console.log('close socket');
-          this.emit('close');
-        }
+        if (typeof msg === "string") this.emit( 'message', msg );
+        else if (isWebSocketCloseEvent(msg)) this.emit('close');
       }
     }
 

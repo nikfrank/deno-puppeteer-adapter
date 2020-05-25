@@ -11,7 +11,7 @@ import { blue, green, red, yellow } from "https://deno.land/std/fmt/colors.ts";
 
 //const endpoint = 'ws://localhost:9222/devtools/page/A2F1DBAB8D8AB4F59B195CC5AEDC9FB1';
 
-export default async (url='https://www.google.ca/', port=9222)=> {
+export default async (url='https://sheshbesh.nikfrank.com/', port=9222)=> {
 
   const response = await fetch('http://localhost:'+port+'/json')
   const tabs = await response.json();

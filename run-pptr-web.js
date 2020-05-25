@@ -5,14 +5,11 @@ import connectSocket from './connect-socket.js';
 
 const wait = t=> (new Promise(f=> setTimeout(f, t)));
 
-console.log('et', EventTarget);
-console.log(puppeteer.connect);
-
 const [proc, ws] = await procChrome();
 
 await wait(900);
 
-const url = 'https://www.google.ca/';
+const url = 'http://sheshbesh.nikfrank.com/';
 const port = 9222;
 const response = await fetch('http://localhost:'+port+'/json')
 const tabs = await response.json();
@@ -23,20 +20,40 @@ const socketUrl = tabs
   .webSocketDebuggerUrl;
 
 
-//const { socket, runCommand } = await connectSocket();
-
-
 const browser = await puppeteer.connect({
   browserWSEndpoint: socketUrl,
-  //`ws://0.0.0.0:8080`, // <-- connect to a server running somewhere
-  
-  ignoreHTTPSErrors: true
+  ignoreHTTPSErrors: true,
 });
 
 const page = await browser.newPage();
-await page.goto('http://sheshbesh.nikfrank.com/', {waitUntil: 'networkidle2'});
+await page.goto(url, { waitUntil: 'networkidle2' });
 
-await page.screenshot({path: 'example.jpeg', fullPage: true, encoding: 'base64' });
+let picCount = 0;
+
+await page.screenshot({
+  path: `pic${picCount++}.jpeg`,
+  fullPage: true,
+  encoding: 'base64',
+});
+
+
+const svg = await page.evaluate( ()=> document.querySelectorAll('svg').length );
+
+console.log('svg', svg);
+
+const gameState = await page.evaluate(()=> ({
+  dice: [...document.querySelectorAll('.dice-container svg')].map((_, i)=> 
+    document.querySelectorAll('.dice-container svg:nth-child('+(i+1)+') circle').length
+  ),
+  blackJail: document.querySelectorAll('.Board  > circle.black-chip').length,
+  whiteJail: document.querySelectorAll('.Board  > circle.white-chip').length,
+  chips: [...document.querySelectorAll('.Board > g:not(:nth-of-type(1)):not(:nth-of-type(2))')].map(chip => ((chip.querySelectorAll('.black-chip').length) - (chip.querySelectorAll('.white-chip').length))),
+  blackHome: document.querySelectorAll('.Board .black-home').length,
+  whiteHome: document.querySelectorAll('.Board .white-home').length,
+  turn: 'black',
+}));
+
+console.log(gameState);
 
 const pages = (await browser.pages());
 const browserWSEndpoint = await browser.wsEndpoint();

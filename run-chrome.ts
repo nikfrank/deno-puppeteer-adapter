@@ -1,4 +1,6 @@
-export default (url='https://google.ca/', port=9222)=>{
+
+
+export default (url='https://sheshbesh.nikfrank.com/', port=9222)=>{
   
   const p = Deno.run({
     cmd: [
@@ -9,9 +11,6 @@ export default (url='https://google.ca/', port=9222)=>{
     ],
   });
 
-  console.log(p.pid);
-  
   return p;
 };
 
-//setTimeout(()=> process.close(), 20000);

@@ -20,7 +20,6 @@ const savePic = async ()=> {
   await Deno.writeFile('pic'+(++picCounter)+'.png', base64.toUint8Array(pic.data));
 };
 
-
 // wait for page load
 await wait(3000);
 
