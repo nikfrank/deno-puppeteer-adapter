@@ -1,5 +1,8 @@
-import puppeteer from './puppeteer-web.js';
-import procChrome from './proc-chrome.js';
+import { puppeteer, runChrome } from './index.js';
+
+//import puppeteer from './puppeteer-web.js';
+//import procChrome from './proc-chrome.js';
+
 import { makeGif, deletePics } from './run-ffmpeg.js';
 
 import {
@@ -11,7 +14,7 @@ import {
 
 const wait = t=> (new Promise(f=> setTimeout(f, t)));
 
-const [proc, ws] = await procChrome();
+const [proc, ws] = await runChrome();
 
 await wait(900);
 
