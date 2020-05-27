@@ -49,8 +49,8 @@ const pageDriver = {
     
     const rect = await page.evaluate(selector => {
       const element = document.querySelector(selector);
-      if (!element)
-        return null;
+      if (!element) return null;
+      
       const {x, y, width, height} = element.getBoundingClientRect();
       return {left: x, top: y, width, height, id: element.id};
     }, selector);
@@ -71,9 +71,7 @@ const pageDriver = {
   })(),
 
   click: selector=> page.evaluate(selector=> {
-    if( !document.querySelectorAll(selector).length ) return 'blah'
-    
-    document.querySelector(selector).click()
+    document.querySelector(selector)?.click();
   }, selector),
   
   clickSVG: selector=> page.evaluate((selector)=>{
@@ -92,15 +90,21 @@ const pageDriver = {
 
 
 const getGameState = ()=> page.evaluate(()=> ({
-  dice: [...document.querySelectorAll('.dice-container svg')].map((_, i)=> 
-    document.querySelectorAll('.dice-container svg:nth-child('+(i+1)+') circle').length
-  ),
+  dice: [...document.querySelectorAll('.dice-container svg')]
+    .map((_, i)=> 
+      document.querySelectorAll('.dice-container svg:nth-child('+(i+1)+') circle').length
+    ),
   blackJail: document.querySelectorAll('.Board  > circle.black-chip').length,
   whiteJail: document.querySelectorAll('.Board  > circle.white-chip').length,
-  chips: [...document.querySelectorAll('.Board > g:not(:nth-of-type(1)):not(:nth-of-type(2))')].map(chip => ((chip.querySelectorAll('.black-chip').length) - (chip.querySelectorAll('.white-chip').length))),
+  chips: [
+    ...document.querySelectorAll('.Board > g:not(:nth-of-type(1)):not(:nth-of-type(2))')
+  ].map(chip => (
+    (chip.querySelectorAll('.black-chip').length) -
+    (chip.querySelectorAll('.white-chip').length)
+  )),
   blackHome: document.querySelectorAll('.Board .black-home').length,
   whiteHome: document.querySelectorAll('.Board .white-home').length,
-  turn: 'black',
+  turn: 'black', // no easy way to determine this from DOM
 }));
 
 

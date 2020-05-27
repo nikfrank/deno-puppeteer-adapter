@@ -1,4 +1,4 @@
-export default (async (url='http://sheshbesh.nikfrank.com/', port=9222)=>{
+export default (async (url='http://sheshbesh.nikfrank.com/', port=9222, timeout=200000)=>{
   
   const process = Deno.run({
     cmd: [
@@ -20,7 +20,7 @@ export default (async (url='http://sheshbesh.nikfrank.com/', port=9222)=>{
   const message = new TextDecoder().decode(buff);
   const wsUrl = message.slice(23);
 
-  setTimeout(()=> process.close(), 200000);
+  setTimeout(()=> process.close(), timeout);
   
   return [process, wsUrl];
 });

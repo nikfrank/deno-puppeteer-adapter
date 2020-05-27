@@ -4,6 +4,7 @@ export const makeGif = ()=> {
       'ffmpeg',
       '-framerate', '2',
       '-i', 'pic%d.png',
+      '-s', '400x266',
       'output.gif'
     ],
     stdout: 'piped',
